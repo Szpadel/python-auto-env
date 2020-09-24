@@ -38,6 +38,14 @@ def _try_read_file_content(file: str) -> Optional[str]:
         return Path(file).read_text()
     return None
 
+def _bin_dir() -> str:
+    if os.name == "posix":
+        return "bin"
+    elif os.name == "nt":
+        return "Scripts"
+    else:
+        raise Exception("Unsupported OS")
+
 def run_in_venv(venv_path: str, requirements: str, main: str):
     # abort execution if already inside venv (we are restarting ourself)
     if sys.prefix != sys.base_prefix:
@@ -47,7 +55,7 @@ def run_in_venv(venv_path: str, requirements: str, main: str):
         if os.path.exists(venv_path):
             shutil.rmtree(venv_path)
         venv.create(venv_path, with_pip=True)
-        venv_pip = os.path.join(venv_path, 'bin', 'pip')
+        venv_pip = os.path.join(venv_path, _bin_dir(), 'pip')
         proc = subprocess.run([
             venv_pip,
             "install",
@@ -61,7 +69,7 @@ def run_in_venv(venv_path: str, requirements: str, main: str):
             _eprint("Failed to create virtual env")
             exit(1)
 
-    venv_python = os.path.join(venv_path, 'bin', 'python')
+    venv_python = os.path.join(venv_path, _bin_dir(), 'python')
     proc = subprocess.run([
         venv_python,
         main,
